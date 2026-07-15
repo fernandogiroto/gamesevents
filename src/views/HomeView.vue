@@ -74,8 +74,7 @@
     </main>
 
     <footer>
-      Atualizado: Julho 2026 · Mais eventos:
-      <a href="https://www.gameagenda.com.br/eventos/nacionais" target="_blank" rel="noopener">gameagenda.com.br</a>
+      Atualizado: Julho 2026
     </footer>
 
     <Toast />
