@@ -23,9 +23,15 @@
         </div>
       </div>
 
-      <div class="field">
-        <label>Data *</label>
-        <InputText v-model="form.date" placeholder="Ex: 10–12 Out 2027" required class="w-full" />
+      <div class="field-row">
+        <div class="field">
+          <label>Data de início *</label>
+          <DatePicker v-model="form.dateStart" dateFormat="dd/mm/yy" placeholder="dd/mm/aaaa" showIcon class="w-full" :minDate="minDate" />
+        </div>
+        <div class="field">
+          <label>Data de fim</label>
+          <DatePicker v-model="form.dateEnd" dateFormat="dd/mm/yy" placeholder="dd/mm/aaaa (opcional)" showIcon class="w-full" :minDate="form.dateStart || minDate" />
+        </div>
       </div>
 
       <div class="field-row">
@@ -89,6 +95,7 @@ import Textarea from 'primevue/textarea'
 import Select from 'primevue/select'
 import Checkbox from 'primevue/checkbox'
 import Button from 'primevue/button'
+import DatePicker from 'primevue/datepicker'
 import { useEventsStore } from '../stores/events'
 import { useToast } from 'primevue/usetoast'
 import { CATEGORIES, STATES } from '../data/events'
@@ -100,12 +107,62 @@ const store = useEventsStore()
 const toast = useToast()
 const saving = ref(false)
 const deleting = ref(false)
-const showConfirmDelete = ref(false)
 
 const isEdit = computed(() => !!props.event)
 
+const minDate = new Date(2026, 6, 1) // Jul 2026
+
+const PT_MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+
+function formatDateDisplay(start, end) {
+  if (!start) return ''
+  const d1 = start.getDate()
+  const m1 = PT_MONTHS[start.getMonth()]
+  const y1 = start.getFullYear()
+  if (!end || end.getTime() === start.getTime()) return `${d1} ${m1} ${y1}`
+  const d2 = end.getDate()
+  const m2 = PT_MONTHS[end.getMonth()]
+  const y2 = end.getFullYear()
+  if (m1 === m2 && y1 === y2) return `${d1}–${d2} ${m1} ${y1}`
+  if (y1 === y2) return `${d1} ${m1} – ${d2} ${m2} ${y1}`
+  return `${d1} ${m1} ${y1} – ${d2} ${m2} ${y2}`
+}
+
+function toSortOrder(date) {
+  if (!date) return 99999999
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return parseInt(`${y}${m}${d}`)
+}
+
+// Parse "10–12 Out 2026" or "10 Out 2026" back to Date for edit mode
+function parseDateString(str) {
+  if (!str) return null
+  const months = { jan:0,fev:1,mar:2,abr:3,mai:4,jun:5,jul:6,ago:7,set:8,out:9,nov:10,dez:11 }
+  const match = str.match(/(\d+)[\s–-]+(\d+)?\s*([A-Za-z]+)\s*(\d{4})/)
+  if (!match) return null
+  const day = parseInt(match[1])
+  const mon = months[match[3].toLowerCase()]
+  const year = parseInt(match[4])
+  if (mon === undefined) return null
+  return new Date(year, mon, day)
+}
+
+function parseEndDate(str) {
+  if (!str) return null
+  const months = { jan:0,fev:1,mar:2,abr:3,mai:4,jun:5,jul:6,ago:7,set:8,out:9,nov:10,dez:11 }
+  const match = str.match(/(\d+)\s*[–-]\s*(\d+)\s*([A-Za-z]+)\s*(\d{4})/)
+  if (!match) return null
+  const day = parseInt(match[2])
+  const mon = months[match[3].toLowerCase()]
+  const year = parseInt(match[4])
+  if (mon === undefined) return null
+  return new Date(year, mon, day)
+}
+
 const BLANK = () => ({
-  name: '', city: '', state: '', date: '', category: '',
+  name: '', city: '', state: '', dateStart: null, dateEnd: null, category: '',
   accepts_indie: false, stand_info: '', cost: '', audience: '', url: '', notes: '',
 })
 
@@ -117,7 +174,8 @@ watch(() => props.event, (ev) => {
       name: ev.name || '',
       city: ev.city || '',
       state: ev.state || '',
-      date: ev.date || '',
+      dateStart: parseDateString(ev.date),
+      dateEnd: parseEndDate(ev.date),
       category: ev.category || '',
       accepts_indie: ev.accepts_indie || false,
       stand_info: ev.stand_info || '',
@@ -149,17 +207,21 @@ async function confirmDelete() {
 }
 
 async function submit() {
-  if (!form.value.name || !form.value.city || !form.value.state || !form.value.date || !form.value.category) {
+  if (!form.value.name || !form.value.city || !form.value.state || !form.value.dateStart || !form.value.category) {
     toast.add({ severity: 'warn', summary: 'Campos obrigatórios', detail: 'Preenche nome, cidade, estado, data e categoria.', life: 3000 })
     return
   }
+
+  const date = formatDateDisplay(form.value.dateStart, form.value.dateEnd)
+  const sort_order = toSortOrder(form.value.dateStart)
+
   saving.value = true
 
   let result
   if (isEdit.value) {
-    result = await store.updateEvent({ ...form.value, id: props.event.id, _originalDate: props.event.date })
+    result = await store.updateEvent({ ...form.value, date, sort_order, id: props.event.id, _originalDate: props.event.date })
   } else {
-    result = await store.addEvent({ ...form.value })
+    result = await store.addEvent({ ...form.value, date, sort_order })
   }
 
   saving.value = false
