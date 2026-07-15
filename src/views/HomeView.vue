@@ -74,7 +74,6 @@
     </main>
 
     <footer>
-      Fontes: GameAgenda.com.br · gamescom latam · BGS · BIG Festival · Brasília Game Festival · Dev Game Show · Indie Brazil Showcase · RetroCon · Canal3 Expo<br>
       Atualizado: Julho 2026 · Mais eventos:
       <a href="https://www.gameagenda.com.br/eventos/nacionais" target="_blank" rel="noopener">gameagenda.com.br</a>
     </footer>
