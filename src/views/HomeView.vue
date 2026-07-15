@@ -11,10 +11,12 @@
 
     <!-- Stats bar -->
     <div class="stats-bar">
-      <div class="stat"><span class="stat-num">{{ store.total }}</span><span class="stat-label">eventos</span></div>
-      <div class="stat"><span class="stat-num">{{ store.totalFree }}</span><span class="stat-label">gratuitos</span></div>
-      <div class="stat"><span class="stat-num">{{ store.totalIndie }}</span><span class="stat-label">aceitam indie</span></div>
-      <div class="stat"><span class="stat-num">{{ filtered.length }}</span><span class="stat-label">a mostrar</span></div>
+      <div class="stats-inner">
+        <div class="stat"><span class="stat-num">{{ store.total }}</span><span class="stat-label">eventos</span></div>
+        <div class="stat"><span class="stat-num">{{ store.totalFree }}</span><span class="stat-label">gratuitos</span></div>
+        <div class="stat"><span class="stat-num">{{ store.totalIndie }}</span><span class="stat-label">aceitam indie</span></div>
+        <div class="stat"><span class="stat-num">{{ filtered.length }}</span><span class="stat-label">a mostrar</span></div>
+      </div>
     </div>
 
     <!-- Controls -->
@@ -137,9 +139,12 @@ header .subtitle-small { font-size: 0.8rem; opacity: 0.55; margin-top: 0.25rem; 
 .stats-bar {
   background: var(--p-surface-0);
   border-bottom: 1px solid var(--p-surface-200);
+  display: flex;
+  justify-content: center;
+}
+.stats-inner {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  max-width: 100%;
+  grid-template-columns: repeat(4, minmax(120px, 180px));
 }
 .stat {
   padding: 1.25rem 1.5rem;
@@ -210,6 +215,6 @@ footer a { color: var(--p-primary-color); }
   header { padding: 1.5rem 1rem 1.25rem; }
   main { padding: 1rem; }
   .controls { padding: 0.75rem 1rem; }
-  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .stats-inner { grid-template-columns: repeat(2, minmax(100px, 160px)); }
 }
 </style>
