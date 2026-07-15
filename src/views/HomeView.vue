@@ -3,7 +3,7 @@
     <!-- Header -->
     <header>
       <div class="hi">
-        <h1>🎮 Guia de Eventos de Games — Brasil 2026</h1>
+        <h1>Guia de Eventos de Games — Brasil 2026</h1>
         <p>Calendário completo com {{ store.total }}+ eventos em todo o Brasil. Clica em qualquer card para ver detalhes de participação e custo de stand.</p>
       </div>
     </header>
