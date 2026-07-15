@@ -30,5 +30,10 @@ create policy "Public read" on public.events
 create policy "Public insert" on public.events
   for insert with check (true);
 
--- Only service role can update/delete
--- (manage via Supabase dashboard)
+-- Anyone can update
+create policy "Public update" on public.events
+  for update using (true) with check (true);
+
+-- Anyone can delete
+create policy "Public delete" on public.events
+  for delete using (true);
