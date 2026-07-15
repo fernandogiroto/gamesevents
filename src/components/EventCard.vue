@@ -39,20 +39,29 @@
           </div>
         </div>
         <p class="notes">{{ event.notes }}</p>
-        <a v-if="event.url" :href="event.url" target="_blank" rel="noopener" class="event-link">
-          <i class="pi pi-external-link" /> {{ displayUrl }}
-        </a>
+        <div class="card-footer">
+          <a v-if="event.url" :href="event.url" target="_blank" rel="noopener" class="event-link">
+            <i class="pi pi-external-link" /> {{ displayUrl }}
+          </a>
+          <button class="edit-btn" @click.stop="showEdit = true">
+            <i class="pi pi-pencil" /> Editar
+          </button>
+        </div>
       </div>
     </Transition>
   </div>
+
+  <AddEventDialog v-model="showEdit" :event="event" />
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import Tag from 'primevue/tag'
+import AddEventDialog from './AddEventDialog.vue'
 
 const props = defineProps({ event: Object })
 const open = ref(false)
+const showEdit = ref(false)
 
 const isFree = computed(() =>
   props.event.cost?.toLowerCase().includes('gratuito') ||
@@ -159,8 +168,36 @@ const displayUrl = computed(() =>
 
 .notes { font-size: 0.82rem; color: var(--p-text-muted-color); line-height: 1.65; margin-bottom: 0.75rem; }
 
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .event-link { font-size: 0.78rem; color: var(--p-primary-color); display: inline-flex; align-items: center; gap: 4px; text-decoration: none; }
 .event-link:hover { text-decoration: underline; }
+
+.edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--p-text-muted-color);
+  background: var(--p-surface-100);
+  border: 1px solid var(--p-surface-200);
+  border-radius: 6px;
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.edit-btn:hover {
+  color: var(--p-primary-color);
+  border-color: var(--p-primary-color);
+  background: var(--p-surface-0);
+}
 
 /* category tag overrides */
 :deep(.tag-grande .p-tag) { background: #fff7ed; color: #ea580c; }

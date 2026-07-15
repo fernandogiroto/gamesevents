@@ -34,11 +34,28 @@ export const useEventsStore = defineStore('events', () => {
     return { ok: true }
   }
 
+  async function updateEvent(payload) {
+    const idx = events.value.findIndex(e => e.name === payload.name && e.date === payload._originalDate)
+    if (!supabase || !payload.id) {
+      if (idx !== -1) events.value[idx] = { ...events.value[idx], ...payload }
+      return { ok: true }
+    }
+    const { id, _originalDate, ...fields } = payload
+    const { error: err } = await supabase.from('events').update(fields).eq('id', id)
+    if (err) return { ok: false, message: err.message }
+    if (idx !== -1) events.value[idx] = { ...events.value[idx], ...fields }
+    else {
+      const i = events.value.findIndex(e => e.id === id)
+      if (i !== -1) events.value[i] = { ...events.value[i], ...fields }
+    }
+    return { ok: true }
+  }
+
   const total = computed(() => events.value.length)
   const totalFree = computed(() =>
     events.value.filter(e => e.cost?.toLowerCase().includes('gratuito') || e.stand_info?.toLowerCase().includes('gratuito')).length
   )
   const totalIndie = computed(() => events.value.filter(e => e.accepts_indie).length)
 
-  return { events, loading, error, fetchFromSupabase, addEvent, total, totalFree, totalIndie }
+  return { events, loading, error, fetchFromSupabase, addEvent, updateEvent, total, totalFree, totalIndie }
 })

@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="visible"
     modal
-    header="Adicionar Evento"
+    :header="isEdit ? 'Editar Evento' : 'Adicionar Evento'"
     :style="{ width: '560px', maxWidth: '95vw' }"
     @hide="reset"
   >
@@ -67,14 +67,19 @@
 
       <div class="form-footer">
         <Button label="Cancelar" text @click="visible = false" />
-        <Button label="Adicionar evento" type="submit" :loading="saving" icon="pi pi-plus" />
+        <Button
+          :label="isEdit ? 'Salvar alterações' : 'Adicionar evento'"
+          type="submit"
+          :loading="saving"
+          :icon="isEdit ? 'pi pi-check' : 'pi pi-plus'"
+        />
       </div>
     </form>
   </Dialog>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, computed } from 'vue'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -86,9 +91,13 @@ import { useToast } from 'primevue/usetoast'
 import { CATEGORIES, STATES } from '../data/events'
 
 const visible = defineModel({ default: false })
+const props = defineProps({ event: { type: Object, default: null } })
+
 const store = useEventsStore()
 const toast = useToast()
 const saving = ref(false)
+
+const isEdit = computed(() => !!props.event)
 
 const BLANK = () => ({
   name: '', city: '', state: '', date: '', category: '',
@@ -97,7 +106,29 @@ const BLANK = () => ({
 
 const form = ref(BLANK())
 
-function reset() { form.value = BLANK() }
+watch(() => props.event, (ev) => {
+  if (ev) {
+    form.value = {
+      name: ev.name || '',
+      city: ev.city || '',
+      state: ev.state || '',
+      date: ev.date || '',
+      category: ev.category || '',
+      accepts_indie: ev.accepts_indie || false,
+      stand_info: ev.stand_info || '',
+      cost: ev.cost || '',
+      audience: ev.audience || '',
+      url: ev.url || '',
+      notes: ev.notes || '',
+    }
+  } else {
+    form.value = BLANK()
+  }
+}, { immediate: true })
+
+function reset() {
+  if (!isEdit.value) form.value = BLANK()
+}
 
 async function submit() {
   if (!form.value.name || !form.value.city || !form.value.state || !form.value.date || !form.value.category) {
@@ -105,10 +136,23 @@ async function submit() {
     return
   }
   saving.value = true
-  const result = await store.addEvent({ ...form.value })
+
+  let result
+  if (isEdit.value) {
+    result = await store.updateEvent({ ...form.value, id: props.event.id, _originalDate: props.event.date })
+  } else {
+    result = await store.addEvent({ ...form.value })
+  }
+
   saving.value = false
+
   if (result.ok) {
-    toast.add({ severity: 'success', summary: 'Evento adicionado!', detail: form.value.name, life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: isEdit.value ? 'Evento atualizado!' : 'Evento adicionado!',
+      detail: form.value.name,
+      life: 3000,
+    })
     visible.value = false
   } else {
     toast.add({ severity: 'error', summary: 'Erro', detail: result.message, life: 4000 })
