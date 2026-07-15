@@ -215,13 +215,15 @@ async function submit() {
   const date = formatDateDisplay(form.value.dateStart, form.value.dateEnd)
   const sort_order = toSortOrder(form.value.dateStart)
 
+  const { dateStart, dateEnd, ...fields } = form.value
+
   saving.value = true
 
   let result
   if (isEdit.value) {
-    result = await store.updateEvent({ ...form.value, date, sort_order, id: props.event.id, _originalDate: props.event.date })
+    result = await store.updateEvent({ ...fields, date, sort_order, id: props.event.id, _originalDate: props.event.date })
   } else {
-    result = await store.addEvent({ ...form.value, date, sort_order })
+    result = await store.addEvent({ ...fields, date, sort_order })
   }
 
   saving.value = false
