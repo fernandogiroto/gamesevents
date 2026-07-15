@@ -66,13 +66,16 @@
       </div>
 
       <div class="form-footer">
-        <Button label="Cancelar" text @click="visible = false" />
-        <Button
-          :label="isEdit ? 'Salvar alterações' : 'Adicionar evento'"
-          type="submit"
-          :loading="saving"
-          :icon="isEdit ? 'pi pi-check' : 'pi pi-plus'"
-        />
+        <Button v-if="isEdit" label="Excluir evento" icon="pi pi-trash" severity="danger" text @click="confirmDelete" :loading="deleting" />
+        <div class="form-footer-right">
+          <Button label="Cancelar" text @click="visible = false" />
+          <Button
+            :label="isEdit ? 'Salvar alterações' : 'Adicionar evento'"
+            type="submit"
+            :loading="saving"
+            :icon="isEdit ? 'pi pi-check' : 'pi pi-plus'"
+          />
+        </div>
       </div>
     </form>
   </Dialog>
@@ -96,6 +99,8 @@ const props = defineProps({ event: { type: Object, default: null } })
 const store = useEventsStore()
 const toast = useToast()
 const saving = ref(false)
+const deleting = ref(false)
+const showConfirmDelete = ref(false)
 
 const isEdit = computed(() => !!props.event)
 
@@ -128,6 +133,19 @@ watch(() => props.event, (ev) => {
 
 function reset() {
   if (!isEdit.value) form.value = BLANK()
+}
+
+async function confirmDelete() {
+  if (!confirm(`Tens a certeza que queres excluir "${props.event.name}"?`)) return
+  deleting.value = true
+  const result = await store.deleteEvent(props.event)
+  deleting.value = false
+  if (result.ok) {
+    toast.add({ severity: 'success', summary: 'Evento excluído', detail: props.event.name, life: 3000 })
+    visible.value = false
+  } else {
+    toast.add({ severity: 'error', summary: 'Erro ao excluir', detail: result.message, life: 4000 })
+  }
 }
 
 async function submit() {
@@ -166,6 +184,7 @@ async function submit() {
 .field label { font-size: 0.8rem; font-weight: 600; color: var(--p-text-muted-color); }
 .field-row { display: flex; gap: 0.75rem; }
 .field-checkbox { justify-content: center; align-items: center; }
-.form-footer { display: flex; justify-content: flex-end; gap: 0.5rem; padding-top: 0.5rem; }
+.form-footer { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; padding-top: 0.5rem; }
+.form-footer-right { display: flex; gap: 0.5rem; }
 .w-full { width: 100%; }
 </style>

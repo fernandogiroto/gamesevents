@@ -51,11 +51,23 @@ export const useEventsStore = defineStore('events', () => {
     return { ok: true }
   }
 
+  async function deleteEvent(payload) {
+    const idx = events.value.findIndex(e => e.id === payload.id || (e.name === payload.name && e.date === payload.date))
+    if (!supabase || !payload.id) {
+      if (idx !== -1) events.value.splice(idx, 1)
+      return { ok: true }
+    }
+    const { error: err } = await supabase.from('events').delete().eq('id', payload.id)
+    if (err) return { ok: false, message: err.message }
+    if (idx !== -1) events.value.splice(idx, 1)
+    return { ok: true }
+  }
+
   const total = computed(() => events.value.length)
   const totalFree = computed(() =>
     events.value.filter(e => e.cost?.toLowerCase().includes('gratuito') || e.stand_info?.toLowerCase().includes('gratuito')).length
   )
   const totalIndie = computed(() => events.value.filter(e => e.accepts_indie).length)
 
-  return { events, loading, error, fetchFromSupabase, addEvent, updateEvent, total, totalFree, totalIndie }
+  return { events, loading, error, fetchFromSupabase, addEvent, updateEvent, deleteEvent, total, totalFree, totalIndie }
 })
