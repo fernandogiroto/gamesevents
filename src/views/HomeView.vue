@@ -3,8 +3,9 @@
     <!-- Header -->
     <header>
       <div class="hi">
-        <h1>Guia de Eventos de Games — Brasil 2026</h1>
-        <p>Calendário completo com {{ store.total }}+ eventos em todo o Brasil. Clica em qualquer card para ver detalhes de participação e custo de stand.</p>
+        <h1>Guia de Eventos de Games — Brasil</h1>
+        <p>Calendário completo de eventos em todo o Brasil.</p>
+        <p class="subtitle-small">Clica em qualquer card para ver detalhes de participação e custo de stand.</p>
       </div>
     </header>
 
@@ -118,7 +119,7 @@ const filtered = computed(() => {
       if (q && !`${e.name} ${e.city} ${e.state} ${e.category} ${e.notes || ''} ${e.date}`.toLowerCase().includes(q)) return false
       return true
     })
-    .sort((a, b) => (b.score || 0) - (a.score || 0))
+    .sort((a, b) => (a.sort_order || 99999999) - (b.sort_order || 99999999))
 })
 </script>
 
@@ -128,9 +129,10 @@ header {
   color: #fff;
   padding: 2.5rem 2rem 2rem;
 }
-.hi { max-width: 1100px; margin: 0 auto; }
+.hi { max-width: 1100px; margin: 0 auto; text-align: center; }
 header h1 { font-size: clamp(1.4rem, 4vw, 2rem); font-weight: 700; margin-bottom: 0.5rem; }
-header p { font-size: 0.9rem; opacity: 0.75; max-width: 600px; }
+header p { font-size: 0.9rem; opacity: 0.75; }
+header .subtitle-small { font-size: 0.8rem; opacity: 0.55; margin-top: 0.25rem; }
 
 .stats-bar {
   background: var(--p-surface-0);
